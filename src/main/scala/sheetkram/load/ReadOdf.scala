@@ -24,9 +24,11 @@ object ReadOdf extends ReadWorkbook {
 
     for ( sheetIdx : Int <- 0 to ( odfWorkbook.getSheetCount() - 1 ) ) {
       val odfSheet : OdfSheet = odfWorkbook.getSheet( sheetIdx )
+      println( "Reading sheet '" + odfSheet.getName() + "', " + odfSheet.getColumnCount() + ", " + odfSheet.getRowCount() )
       workbook = workbook.updateSheet( Sheet( sheetIdx, odfSheet.getName() ) )
-      for ( colIdx : Int <- 0 to ( odfSheet.getColumnCount() - 1 ) ) {
-        for ( rowIdx : Int <- 0 to ( odfSheet.getRowCount() - 1 ) ) {
+      for ( rowIdx : Int <- 0 to ( math.min( odfSheet.getRowCount() - 1, 5000 ) ) ) { // Begrenzung ist harter Hack!!!
+        for ( colIdx : Int <- 0 to ( math.min( odfSheet.getColumnCount() - 1, 50 ) ) ) { // Begrenzung ist harter Hack!!!
+          println( "Reading cell " + colIdx + ", " + rowIdx )
           val odfCell : OdfCell[ OdfWorkbook ] = odfSheet.getCellAt( colIdx, rowIdx )
           if ( !odfCell.isEmpty() ) {
             val cellPos = CellPosition( colIdx, rowIdx )

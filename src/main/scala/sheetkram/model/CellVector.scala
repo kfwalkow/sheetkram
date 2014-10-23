@@ -1,11 +1,11 @@
 package sheetkram.model
 
-trait CellVector {
-  def cells : IndexedSeq[ Cell ]
-}
+case class ColumnPosition( idx : Int )
 
-case class Column(
-  cells : IndexedSeq[ Cell ] ) extends CellVector
+case class RowPosition( idx : Int )
 
-case class Row(
-  cells : IndexedSeq[ Cell ] ) extends CellVector
+case class Column( position : ColumnPosition,
+                   cells : Map[ RowPosition, Cell ] )
+
+case class Row( position : RowPosition,
+                cells : Map[ ColumnPosition, Cell ] )
