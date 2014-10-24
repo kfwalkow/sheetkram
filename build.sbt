@@ -1,3 +1,5 @@
+organization := "sheetkram"
+
 name := "sheetkram"
 
 version := "0.1"
