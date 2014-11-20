@@ -1,4 +1,4 @@
-package sheetkram.load
+package sheetkram.io.odf
 
 import sheetkram.model.Workbook
 import java.io.File
@@ -14,6 +14,8 @@ import org.jopendocument.dom.ODValueType
 import sheetkram.model.NumberCell
 import java.util.Date
 import sheetkram.model.DateCell
+import sheetkram.model.CellPosition
+import sheetkram.io.ReadWorkbook
 
 object ReadOdf extends ReadWorkbook {
 
@@ -24,11 +26,9 @@ object ReadOdf extends ReadWorkbook {
 
     for ( sheetIdx : Int <- 0 to ( odfWorkbook.getSheetCount() - 1 ) ) {
       val odfSheet : OdfSheet = odfWorkbook.getSheet( sheetIdx )
-      println( "Reading sheet '" + odfSheet.getName() + "', " + odfSheet.getColumnCount() + ", " + odfSheet.getRowCount() )
-      workbook = workbook.updateSheet( Sheet( sheetIdx, odfSheet.getName() ) )
-      for ( rowIdx : Int <- 0 to ( math.min( odfSheet.getRowCount() - 1, 5000 ) ) ) { // Begrenzung ist harter Hack!!!
-        for ( colIdx : Int <- 0 to ( math.min( odfSheet.getColumnCount() - 1, 50 ) ) ) { // Begrenzung ist harter Hack!!!
-          println( "Reading cell " + colIdx + ", " + rowIdx )
+      workbook = workbook.createSheet( sheetIdx, odfSheet.getName )
+      for ( rowIdx : Int <- 0 to ( odfSheet.getRowCount() - 1 ) ) {
+        for ( colIdx : Int <- 0 to ( odfSheet.getColumnCount() - 1 ) ) {
           val odfCell : OdfCell[ OdfWorkbook ] = odfSheet.getCellAt( colIdx, rowIdx )
           if ( !odfCell.isEmpty() ) {
             val cellPos = CellPosition( colIdx, rowIdx )
@@ -39,13 +39,13 @@ object ReadOdf extends ReadWorkbook {
               case ODValueType.DATE       => DateCell( cellPos, odfCell.getValue().asInstanceOf[ Date ] )
               case _                      => TextCell( cellPos, odfCell.getTextValue() ) // Unsupported datatypes
             }
-            workbook = workbook.sheetForUpdate( sheetIdx ).updateCell( cell )
+            workbook = workbook.updateSheet( sheetIdx, cell )
           }
         }
       }
     }
-
     workbook
   }
 
 }
+
