@@ -7,44 +7,34 @@ case class SheetPosition( idx : Int )
 case class Sheet private (
   position : SheetPosition,
   name : String,
-  private val cells : Map[ CellPosition, Cell ],
-  private val cols : Map[ ColumnPosition, Column ],
-  private val rows : Map[ RowPosition, Row ] ) {
+  private val cols : Map[ Int, Map[ Int, Cell ] ],
+  private val rows : Map[ Int, Map[ Int, Cell ] ] ) {
 
-  def cell( colIdx : Int, rowIdx : Int ) : Cell = cells( CellPosition( colIdx, rowIdx ) )
+  def cell( colIdx : Int, rowIdx : Int ) : Option[ Cell ] =
+    if ( colIdx < cols.size && rowIdx < rows.size ) Some( cols( colIdx )( rowIdx ) ) else None
 
-  def column( colIdx : Int ) : Column = {
-    val colPos = ColumnPosition( colIdx )
-    if ( cols.contains( colPos ) ) cols( colPos ) else Column( colPos, Map() )
-  }
+  def column( colIdx : Int ) : Option[ Map[ Int, Cell ] ] =
+    cols.get( colIdx )
 
-  def row( rowIdx : Int ) : Row = {
-    val rowPos = RowPosition( rowIdx )
-    if ( rows.contains( rowPos ) ) rows( rowPos ) else Row( rowPos, Map() )
-  }
+  def row( rowIdx : Int ) : Option[ Map[ Int, Cell ] ] =
+    rows.get( rowIdx )
 
-  def allRows : Seq[ Row ] = rows.values.toSeq
+  def allRows : Map[ Int, Map[ Int, Cell ] ] = rows
 
-  private def updateCell( wb : Workbook, cell : Cell ) : Workbook = {
+  def createOrUpdateCell( cell : Cell ) : Sheet = {
     val colIdx = cell.position.colIdx
     val rowIdx = cell.position.rowIdx
-    wb.updateSheet( copy(
-      cells = cells + ( cell.position -> cell ),
-      cols = cols + ( ColumnPosition( colIdx ) -> Column(
-        ColumnPosition( colIdx ), column( colIdx ).cells + ( RowPosition( rowIdx ) -> cell ) ) ),
-      rows = rows + ( RowPosition( rowIdx ) -> Row(
-        RowPosition( rowIdx ), row( rowIdx ).cells + ( ColumnPosition( colIdx ) -> cell ) ) ) ) )
+    copy(
+      cols = cols + ( colIdx -> ( cols.getOrElse( colIdx, Map() ) + ( rowIdx -> cell ) ) ),
+      rows = rows + ( rowIdx -> ( rows.getOrElse( rowIdx, Map() ) + ( colIdx -> cell ) ) )
+    )
   }
 
 }
 
 object Sheet {
 
-  def apply( pos : Int, name : String ) : Sheet = Sheet( SheetPosition( pos ), name, Map(), Map(), Map() )
-
-  case class Updater( s : Sheet, w : Workbook ) {
-    val updateCell = s.updateCell( w, _ : Cell )
-  }
+  def apply( sheetPos : SheetPosition, name : String ) : Sheet = Sheet( sheetPos, name, Map(), Map() )
 
 }
 
