@@ -7,6 +7,8 @@ case class Workbook private (
 
   def sheetByName( name : String ) : Option[ Sheet ] = sheets.find( _.name == name )
 
+  def allSheets : IndexedSeq[ Sheet ] = sheets
+
   private def insertSheet( sheet : Sheet ) : Workbook =
     copy( sheets = ( sheets.take( sheet.position.idx ) :+ sheet ) ++ sheets.drop( sheet.position.idx + 1 ) )
 

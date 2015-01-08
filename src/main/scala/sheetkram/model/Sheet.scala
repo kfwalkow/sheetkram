@@ -19,6 +19,8 @@ case class Sheet private (
   def row( rowIdx : Int ) : Option[ Map[ Int, Cell ] ] =
     rows.get( rowIdx )
 
+  def allColumns : Map[ Int, Map[ Int, Cell ] ] = cols
+
   def allRows : Map[ Int, Map[ Int, Cell ] ] = rows
 
   def createOrUpdateCell( cell : Cell ) : Sheet = {
