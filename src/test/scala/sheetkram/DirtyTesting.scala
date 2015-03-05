@@ -2,51 +2,40 @@ package sheetkram
 
 import java.io.File
 import java.util.Date
-//import sheetkram.io.odf.WriteOdf
+import sheetkram.io.odf.WriteOdf
 import java.nio.file.Files
 import java.nio.file.Paths
 import sheetkram.model.Workbook
 import sheetkram.io.odf.ReadOdf
 import sheetkram.model.TextCell
+import sheetkram.io.ooxml.WriteXlsx
+import sheetkram.io.ooxml.ReadXlsx
 
 object DirtyTesting {
 
   def main( args : Array[ String ] ) : Unit = {
 
-    //    var workbook : Workbook = ReadOdf.fromFile( new File( "src/test/resources/simple1.ods" ) )
+    var workbook : Workbook = ReadOdf.fromFile( new File( "src/test/resources/simple1.ods" ) )
+    println( "Zeile 0: " + workbook.sheet( 0 ).get.row( 0 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
+    println( "Zeile 1: " + workbook.sheet( 0 ).get.row( 1 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
+    println( "Spalte 1: " + workbook.sheet( 0 ).get.column( 1 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
 
-    //    workbook = workbook.Sheet( 0 ).updateCell( Cell( 1, 3, "HUHU" ) )
-    //    println( workbook.sheet( 0 ).cell( 1, 4 ) )
+    workbook = workbook.updateCell( 0, 10, 2, TextCell( "HUHU" ) )
+    println( "Zelle X: " + workbook.sheet( 0 ).get.cell( 10, 2 ).get.valueAsText )
 
-    //    for ( x <- 0 to 1 )
-    //      for ( y <- 0 to 4 ) {
-    //        // by sheet idx:
-    //        workbook.sheet( 0 ).foreach { s0 => println( x + ", " + y + ": " + s0.cell( x, y ).map { c : Cell => c.valueAsText } ) }
-    //        // by sheet name:
-    //        workbook.sheetByName( "Tabelle1" ).foreach { t1 =>
-    //          t1.cell( x, y ).foreach {
-    //            _.valueAsDate.foreach { d : Date =>
-    //              println( "Date: " + d )
-    //            }
-    //          }
-    //        }
-    //      }
+    workbook = workbook.appendSheet( "Moin" )
+    workbook = workbook.updateCell( 1, 2, 2, TextCell( "Tachchen!" ) )
 
-    //    println( "Zeile 0: " + workbook.sheet( 0 ).get.row( 0 ).get.map { _._2.valueAsText }.mkString( ", " ) )
-    //    println( "Zeile 1: " + workbook.sheet( 0 ).get.row( 1 ).get.map { _._2.valueAsText }.mkString( ", " ) )
-    //    println( "Spalte 1: " + workbook.sheet( 0 ).get.column( 1 ).get.map { _._2.valueAsText }.mkString( ", " ) )
+    Files.deleteIfExists( Paths.get( "../simple1_out.ods" ) )
+    Files.createFile( Paths.get( "../simple1_out.ods" ) )
+    WriteOdf.toFile( workbook, new File( "../simple1_out.ods" ) )
 
-    var Workbook : Workbook = ReadOdf.fromFile( new File( "src/test/resources/simple1.ods" ) )
-    println( "Zeile 0: " + Workbook.sheet( 0 ).get.row( 0 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
-    println( "Zeile 1: " + Workbook.sheet( 0 ).get.row( 1 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
-    println( "Spalte 1: " + Workbook.sheet( 0 ).get.column( 1 ).get.cells.map { _.valueAsText }.mkString( ", " ) )
+    Files.deleteIfExists( Paths.get( "../simple1_out.xlsx" ) )
+    Files.createFile( Paths.get( "../simple1_out.xlsx" ) )
+    WriteXlsx.toFile( workbook, new File( "../simple1_out.xlsx" ) )
 
-    Workbook = Workbook.updateCell( 0, 10, 2, TextCell( "HUHU" ) )
-    println( "Zelle X: " + Workbook.sheet( 0 ).get.cell( 10, 2 ).get.valueAsText )
-    //    Files.createFile( Paths.get( "src/test/resources/simple1_out.ods" ) )
-    //    val Workbook : Workbook = workbook.createSheet( 1, "Moin" ).
-    //      updateSheet( 1, TextCell( CellPosition( 2, 2 ), "HAAAAAAAAAAAAAAAAALLOOO" ) )
-    //    WriteOdf.toFile( Workbook, new File( "src/test/resources/simple1_out.ods" ) )
+    val workbook2 : Workbook = ReadXlsx.fromFile( new File( "../simple1_out.xlsx" ) )
+    println( "Zelle X: " + workbook2.sheet( 0 ).get.cell( 10, 2 ).get.valueAsText )
 
   }
 

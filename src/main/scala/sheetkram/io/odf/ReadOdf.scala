@@ -12,6 +12,7 @@ import sheetkram.model.DateCell
 import sheetkram.model.Cell
 import sheetkram.model.TextCell
 import sheetkram.io.ReadWorkbook
+import sheetkram.model.EmptyCell
 
 object ReadOdf extends ReadWorkbook {
 
@@ -35,6 +36,8 @@ object ReadOdf extends ReadWorkbook {
               case _                      => TextCell( odfCell.getTextValue ) // Unsupported datatypes
             }
             workbook = workbook.updateCell( sheetIdx, colIdx, rowIdx, cell )
+          } else {
+            workbook = workbook.updateCell( sheetIdx, colIdx, rowIdx, EmptyCell() )
           }
         }
       }

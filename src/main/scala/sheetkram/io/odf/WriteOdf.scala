@@ -7,8 +7,10 @@ import org.jopendocument.dom.spreadsheet.{ SpreadSheet => OdfWorkbook }
 
 import javax.swing.table.DefaultTableModel
 import sheetkram.io.WriteWorkbook
+import sheetkram.model.BooleanCell
 import sheetkram.model.Cell
 import sheetkram.model.DateCell
+import sheetkram.model.EmptyCell
 import sheetkram.model.NumberCell
 import sheetkram.model.Row
 import sheetkram.model.Sheet
@@ -25,8 +27,7 @@ object WriteOdf extends WriteWorkbook {
 
         val isFirstSheet = sheetIdx == 0
 
-        val odfSheet : OdfSheet = null
-        if ( isFirstSheet ) odfWorkbook.getFirstSheet() else odfWorkbook.addSheet( sheetIdx, sheet.name )
+        val odfSheet : OdfSheet = if ( isFirstSheet ) odfWorkbook.getFirstSheet() else odfWorkbook.addSheet( sheetIdx, sheet.name )
 
         if ( isFirstSheet )
           odfSheet.setName( sheet.name )
@@ -39,14 +40,11 @@ object WriteOdf extends WriteWorkbook {
             row.cells.zipWithIndex.foreach {
               case ( cell : Cell, colIdx : Int ) =>
                 cell match {
-                  case NumberCell(
-                    _ ) => cell.valueAsNumber.foreach { v =>
-                    odfSheet.setValueAt( v.bigDecimal, colIdx, rowIdx )
-                  }
-                  case DateCell( _ ) => cell.valueAsDate.foreach { v =>
-                    odfSheet.setValueAt( v, colIdx, rowIdx )
-                  }
-                  case _ => odfSheet.setValueAt( cell.valueAsText, colIdx, rowIdx )
+                  case NumberCell( v )  => odfSheet.setValueAt( v.bigDecimal, colIdx, rowIdx )
+                  case DateCell( v )    => odfSheet.setValueAt( v, colIdx, rowIdx )
+                  case BooleanCell( v ) => odfSheet.setValueAt( v, colIdx, rowIdx )
+                  case EmptyCell()      =>
+                  case _                => odfSheet.setValueAt( cell.valueAsText, colIdx, rowIdx )
                 }
             }
         }
