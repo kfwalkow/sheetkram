@@ -1,20 +1,16 @@
 package sheetkram.io.odf
 
-import sheetkram.model.Workbook
 import java.io.File
 import org.jopendocument.dom.spreadsheet.{ SpreadSheet => OdfWorkbook }
 import org.jopendocument.dom.spreadsheet.{ Sheet => OdfSheet }
 import org.jopendocument.dom.spreadsheet.{ Cell => OdfCell }
-import sheetkram.model.Cell
-import sheetkram.model.Sheet
-import sheetkram.model.SheetPosition
-import sheetkram.model.CellPosition
-import sheetkram.model.TextCell
 import org.jopendocument.dom.ODValueType
-import sheetkram.model.NumberCell
 import java.util.Date
+import sheetkram.model.Workbook
+import sheetkram.model.NumberCell
 import sheetkram.model.DateCell
-import sheetkram.model.CellPosition
+import sheetkram.model.Cell
+import sheetkram.model.TextCell
 import sheetkram.io.ReadWorkbook
 
 object ReadOdf extends ReadWorkbook {
@@ -26,20 +22,19 @@ object ReadOdf extends ReadWorkbook {
 
     for ( sheetIdx : Int <- 0 to ( odfWorkbook.getSheetCount() - 1 ) ) {
       val odfSheet : OdfSheet = odfWorkbook.getSheet( sheetIdx )
-      workbook = workbook.createSheet( sheetIdx, odfSheet.getName )
+      workbook = workbook.appendSheet( odfSheet.getName )
       for ( rowIdx : Int <- 0 to ( odfSheet.getRowCount() - 1 ) ) {
         for ( colIdx : Int <- 0 to ( odfSheet.getColumnCount() - 1 ) ) {
           val odfCell : OdfCell[ OdfWorkbook ] = odfSheet.getCellAt( colIdx, rowIdx )
           if ( !odfCell.isEmpty() ) {
-            val cellPos = CellPosition( colIdx, rowIdx )
             val cell : Cell = odfCell.getValueType() match {
-              case ODValueType.STRING     => TextCell( cellPos, odfCell.getTextValue() )
-              case ODValueType.FLOAT      => NumberCell( cellPos, odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
-              case ODValueType.PERCENTAGE => NumberCell( cellPos, odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
-              case ODValueType.DATE       => DateCell( cellPos, odfCell.getValue().asInstanceOf[ Date ] )
-              case _                      => TextCell( cellPos, odfCell.getTextValue() ) // Unsupported datatypes
+              case ODValueType.STRING     => TextCell( odfCell.getTextValue() )
+              case ODValueType.FLOAT      => NumberCell( odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
+              case ODValueType.PERCENTAGE => NumberCell( odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
+              case ODValueType.DATE       => DateCell( odfCell.getValue().asInstanceOf[ Date ] )
+              case _                      => TextCell( odfCell.getTextValue() ) // Unsupported datatypes
             }
-            workbook = workbook.updateSheet( sheetIdx, cell )
+            workbook = workbook.updateCell( sheetIdx, colIdx, rowIdx, cell )
           }
         }
       }
@@ -48,4 +43,3 @@ object ReadOdf extends ReadWorkbook {
   }
 
 }
-
