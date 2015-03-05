@@ -1,20 +1,18 @@
 package sheetkram.io.odf
 
 import java.io.File
-import org.jopendocument.dom.spreadsheet.{ SpreadSheet => OdfWorkbook }
+
 import org.jopendocument.dom.spreadsheet.{ Sheet => OdfSheet }
-import org.jopendocument.dom.spreadsheet.{ Cell => OdfCell }
-import sheetkram.io.WriteWorkbook
-import sheetkram.model.Workbook
-import org.jopendocument.dom.OOUtils
-import javax.swing.table.TableModel
+import org.jopendocument.dom.spreadsheet.{ SpreadSheet => OdfWorkbook }
+
 import javax.swing.table.DefaultTableModel
-import org.jopendocument.dom.spreadsheet.SheetTableModel.MutableTableModel
-import sheetkram.model.Sheet
+import sheetkram.io.WriteWorkbook
 import sheetkram.model.Cell
-import sheetkram.model.TextCell
-import sheetkram.model.NumberCell
 import sheetkram.model.DateCell
+import sheetkram.model.NumberCell
+import sheetkram.model.Row
+import sheetkram.model.Sheet
+import sheetkram.model.Workbook
 
 object WriteOdf extends WriteWorkbook {
 
@@ -22,32 +20,36 @@ object WriteOdf extends WriteWorkbook {
 
     val odfWorkbook : OdfWorkbook = OdfWorkbook.createEmpty( new DefaultTableModel() )
 
-    workbook.allSheets.foreach { sheet : Sheet =>
+    workbook.sheets.zipWithIndex.foreach {
+      case ( sheet : Sheet, sheetIdx : Int ) =>
 
-      val isFirstSheet = sheet.position.idx == 0
+        val isFirstSheet = sheetIdx == 0
 
-      val odfSheet : OdfSheet =
-        if ( isFirstSheet ) odfWorkbook.getFirstSheet() else odfWorkbook.addSheet( sheet.position.idx, sheet.name )
+        val odfSheet : OdfSheet = null
+        if ( isFirstSheet ) odfWorkbook.getFirstSheet() else odfWorkbook.addSheet( sheetIdx, sheet.name )
 
-      if ( isFirstSheet )
-        odfSheet.setName( sheet.name )
+        if ( isFirstSheet )
+          odfSheet.setName( sheet.name )
 
-      odfSheet.ensureColumnCount( sheet.allColumns.keySet.max + 1 )
-      odfSheet.ensureRowCount( sheet.allRows.keySet.max + 1 )
+        odfSheet.ensureColumnCount( sheet.columns.size )
+        odfSheet.ensureRowCount( sheet.rows.size )
 
-      sheet.allRows.values.foreach { row : Map[ Int, Cell ] =>
-        row.values.foreach { cell : Cell =>
-          cell match {
-            case NumberCell( _, _ ) => cell.valueAsNumber.foreach { v =>
-              odfSheet.setValueAt( v.bigDecimal, cell.position.colIdx, cell.position.rowIdx )
+        sheet.rows.zipWithIndex.foreach {
+          case ( row : Row, rowIdx : Int ) =>
+            row.cells.zipWithIndex.foreach {
+              case ( cell : Cell, colIdx : Int ) =>
+                cell match {
+                  case NumberCell(
+                    _ ) => cell.valueAsNumber.foreach { v =>
+                    odfSheet.setValueAt( v.bigDecimal, colIdx, rowIdx )
+                  }
+                  case DateCell( _ ) => cell.valueAsDate.foreach { v =>
+                    odfSheet.setValueAt( v, colIdx, rowIdx )
+                  }
+                  case _ => odfSheet.setValueAt( cell.valueAsText, colIdx, rowIdx )
+                }
             }
-            case DateCell( _, _ ) => cell.valueAsDate.foreach { v =>
-              odfSheet.setValueAt( v, cell.position.colIdx, cell.position.rowIdx )
-            }
-            case _ => odfSheet.setValueAt( cell.valueAsText, cell.position.colIdx, cell.position.rowIdx )
-          }
         }
-      }
 
     }
 

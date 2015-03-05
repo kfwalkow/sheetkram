@@ -1,47 +1,68 @@
 package sheetkram.model
 
-import scala.collection.SortedMap
-
-case class SheetPosition( idx : Int )
-
 case class Sheet private (
-  position : SheetPosition,
   name : String,
-  private val cols : Map[ Int, Sheet.Column ],
-  private val rows : Map[ Int, Sheet.Row ] ) {
-
-  //  private val cols2 : IndexedSeq[ IndexedSeq[ Cell ] ] = IndexedSeq()
+  columns : IndexedSeq[ Column ],
+  rows : IndexedSeq[ Row ] ) {
 
   def cell( colIdx : Int, rowIdx : Int ) : Option[ Cell ] =
-    if ( colIdx < cols.size && rowIdx < rows.size ) Some( cols( colIdx )( rowIdx ) ) else None
+    if ( colIdx < columns.size && rowIdx < rows.size ) Some( columns( colIdx ).cells( rowIdx ) ) else None
 
-  def column( colIdx : Int ) : Option[ Sheet.Column ] =
-    cols.get( colIdx )
+  def column( colIdx : Int ) : Option[ Column ] =
+    if ( colIdx >= columns.size ) None else Some( columns( colIdx ) )
 
-  def row( rowIdx : Int ) : Option[ Sheet.Row ] =
-    rows.get( rowIdx )
+  def row( rowIdx : Int ) : Option[ Row ] =
+    if ( rowIdx >= rows.size ) None else Some( rows( rowIdx ) )
 
-  def allColumns : Map[ Int, Sheet.Column ] = cols
+  def updateCell( colIdx : Int, rowIdx : Int, cell : Cell ) : Sheet = {
+    val _columns : IndexedSeq[ Column ] =
+      if ( colIdx >= columns.size ) {
+        if ( rowIdx >= rows.size ) {
+          columns.map { col => col.ensure( rowIdx ) } ++
+            IndexedSeq.fill( colIdx - columns.size )( Column( rowIdx + 1 ) ) :+
+            Column( rowIdx + 1 ).updateCell( rowIdx, cell )
+        } else {
+          columns ++
+            IndexedSeq.fill( colIdx - columns.size )( Column( rows.size ) ) :+
+            Column( rows.size ).updateCell( rowIdx, cell )
+        }
+      } else {
+        if ( rowIdx >= rows.size ) {
+          columns.map { col => col.ensure( rowIdx ) }.
+            updated( colIdx, columns( colIdx ).updateCell( rowIdx, cell ) )
+        } else {
+          columns.updated( colIdx, columns( colIdx ).updateCell( rowIdx, cell ) )
+        }
+      }
 
-  def allRows : Map[ Int, Sheet.Row ] = rows
+    val _rows : IndexedSeq[ Row ] =
+      if ( rowIdx >= rows.size ) {
+        if ( colIdx >= columns.size ) {
+          rows.map { row => row.ensure( colIdx ) } ++
+            IndexedSeq.fill( rowIdx - rows.size )( Row( colIdx + 1 ) ) :+
+            Row( colIdx + 1 ).updateCell( colIdx, cell )
+        } else {
+          rows ++
+            IndexedSeq.fill( rowIdx - rows.size )( Row( columns.size ) ) :+
+            Row( columns.size ).updateCell( colIdx, cell )
+        }
+      } else {
+        if ( colIdx >= columns.size ) {
+          rows.map { row => row.ensure( colIdx ) }.
+            updated( rowIdx, rows( rowIdx ).updateCell( colIdx, cell ) )
+        } else {
+          rows.updated( rowIdx, rows( rowIdx ).updateCell( colIdx, cell ) )
+        }
+      }
 
-  def createOrUpdateCell( cell : Cell ) : Sheet = {
-    val colIdx = cell.position.colIdx
-    val rowIdx = cell.position.rowIdx
-    copy(
-      cols = cols + ( colIdx -> ( cols.getOrElse( colIdx, Map() ) + ( rowIdx -> cell ) ) ),
-      rows = rows + ( rowIdx -> ( rows.getOrElse( rowIdx, Map() ) + ( colIdx -> cell ) ) )
-    )
+    copy( columns = _columns, rows = _rows )
+
   }
 
 }
 
 object Sheet {
 
-  def apply( sheetPos : SheetPosition, name : String ) : Sheet = Sheet( sheetPos, name, Map(), Map() )
-
-  type Column = Map[ Int, Cell ]
-  type Row = Map[ Int, Cell ]
+  def apply( name : String ) : Sheet = Sheet( name, IndexedSeq(), IndexedSeq() )
 
 }
-
