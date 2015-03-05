@@ -20,25 +20,26 @@ object ReadOdf extends ReadWorkbook {
     val odfWorkbook : OdfWorkbook = OdfWorkbook.createFromFile( file )
     var workbook : Workbook = Workbook()
 
-    for ( sheetIdx : Int <- 0 to ( odfWorkbook.getSheetCount() - 1 ) ) {
+    for ( sheetIdx : Int <- 0 to ( odfWorkbook.getSheetCount - 1 ) ) {
       val odfSheet : OdfSheet = odfWorkbook.getSheet( sheetIdx )
       workbook = workbook.appendSheet( odfSheet.getName )
-      for ( rowIdx : Int <- 0 to ( odfSheet.getRowCount() - 1 ) ) {
-        for ( colIdx : Int <- 0 to ( odfSheet.getColumnCount() - 1 ) ) {
+      for ( rowIdx : Int <- 0 to ( odfSheet.getRowCount - 1 ) ) {
+        for ( colIdx : Int <- 0 to ( odfSheet.getColumnCount - 1 ) ) {
           val odfCell : OdfCell[ OdfWorkbook ] = odfSheet.getCellAt( colIdx, rowIdx )
-          if ( !odfCell.isEmpty() ) {
-            val cell : Cell = odfCell.getValueType() match {
-              case ODValueType.STRING     => TextCell( odfCell.getTextValue() )
-              case ODValueType.FLOAT      => NumberCell( odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
-              case ODValueType.PERCENTAGE => NumberCell( odfCell.getValue().asInstanceOf[ java.math.BigDecimal ] )
-              case ODValueType.DATE       => DateCell( odfCell.getValue().asInstanceOf[ Date ] )
-              case _                      => TextCell( odfCell.getTextValue() ) // Unsupported datatypes
+          if ( !odfCell.isEmpty ) {
+            val cell : Cell = odfCell.getValueType match {
+              case ODValueType.STRING     => TextCell( odfCell.getTextValue )
+              case ODValueType.FLOAT      => NumberCell( odfCell.getValue.asInstanceOf[ java.math.BigDecimal ] )
+              case ODValueType.PERCENTAGE => NumberCell( odfCell.getValue.asInstanceOf[ java.math.BigDecimal ] )
+              case ODValueType.DATE       => DateCell( odfCell.getValue.asInstanceOf[ Date ] )
+              case _                      => TextCell( odfCell.getTextValue ) // Unsupported datatypes
             }
             workbook = workbook.updateCell( sheetIdx, colIdx, rowIdx, cell )
           }
         }
       }
     }
+
     workbook
   }
 
