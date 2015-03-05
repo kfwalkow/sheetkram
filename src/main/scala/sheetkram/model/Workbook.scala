@@ -1,33 +1,24 @@
 package sheetkram.model
 
 case class Workbook private (
-  private val sheets : IndexedSeq[ Sheet ] ) {
+  sheets : IndexedSeq[ Sheet ] ) {
+
+  private def ensure( idx : Int ) : IndexedSeq[ Sheet ] = {
+    if ( idx >= sheets.size )
+      sheets ++ IndexedSeq.fill( idx - sheets.size + 1 )( Sheet( "Sheet " + idx ) )
+    else
+      sheets
+  }
 
   def sheet( idx : Int ) : Option[ Sheet ] = if ( idx < sheets.size ) Some( sheets( idx ) ) else None
 
   def sheetByName( name : String ) : Option[ Sheet ] = sheets.find( _.name == name )
 
-  def allSheets : IndexedSeq[ Sheet ] = sheets
+  def appendSheet( name : String ) : Workbook = copy( sheets :+ Sheet( name ) )
 
-  private def insertSheet( sheet : Sheet ) : Workbook =
-    copy( sheets = ( sheets.take( sheet.position.idx ) :+ sheet ) ++ sheets.drop( sheet.position.idx + 1 ) )
-
-  def createSheet( idx : Int, name : String ) : Workbook = {
-    assert( idx >= 0 && idx <= sheets.size, "Invalid index for new sheet!" )
-    insertSheet( Sheet( SheetPosition( idx ), name ) )
-  }
-
-  def updateSheet( idx : Int, cell : Cell ) : Workbook = {
-    assert( idx >= 0 && idx < sheets.size, "Sheet with index " + idx + " does not exist!" )
-    insertSheet( sheets( idx ).createOrUpdateCell( cell ) )
-  }
-
-  def updateSheet( sheet : Sheet, cell : Cell ) : Workbook =
-    updateSheet( sheet.position.idx, cell )
-
-  def removeSheet( idx : Int ) : Workbook = {
-    assert( idx >= 0 && idx < sheets.size, "Sheet with index " + idx + " does not exist!" )
-    copy( sheets = sheets.take( idx ) ++ sheets.drop( idx + 1 ) )
+  def updateCell( idx : Int, colIdx : Int, rowIdx : Int, cell : Cell ) : Workbook = {
+    val ensuredSheets = ensure( idx )
+    copy( sheets = ensuredSheets.updated( idx, ensuredSheets( idx ).updateCell( colIdx, rowIdx, cell ) ) )
   }
 
 }
