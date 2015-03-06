@@ -13,7 +13,12 @@ object WriteXlsx extends WriteWorkbook with WriteOoxml {
   def toFile( workbook : Workbook, file : File ) : Unit = {
     val xlsxWorkbook : XlsxWorkbook = new XlsxWorkbook()
     doWrite( workbook, xlsxWorkbook )
-    xlsxWorkbook.write( new FileOutputStream( file ) ) // TODO: ressource handling
+    val out = new FileOutputStream( file )
+    try {
+      xlsxWorkbook.write( out )
+    } finally {
+      out.close()
+    }
   }
 
 }
