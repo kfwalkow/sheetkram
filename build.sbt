@@ -4,7 +4,7 @@ name := "sheetkram"
 
 version := "0.2-SNAPSHOT"
 
-scalaVersion := "2.11.5"
+scalaVersion := "2.11.6"
 
 libraryDependencies += "org.jopendocument" % "jOpenDocument" % "1.3"
 
