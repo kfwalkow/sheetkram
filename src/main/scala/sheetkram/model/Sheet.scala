@@ -1,18 +1,9 @@
 package sheetkram.model
 
 case class Sheet private (
-  name : String,
-  columns : IndexedSeq[ Column ],
-  rows : IndexedSeq[ Row ] ) {
-
-  def cell( colIdx : Int, rowIdx : Int ) : Option[ Cell ] =
-    if ( colIdx < columns.size && rowIdx < rows.size ) Some( columns( colIdx ).cells( rowIdx ) ) else None
-
-  def column( colIdx : Int ) : Option[ Column ] =
-    if ( colIdx >= columns.size ) None else Some( columns( colIdx ) )
-
-  def row( rowIdx : Int ) : Option[ Row ] =
-    if ( rowIdx >= rows.size ) None else Some( rows( rowIdx ) )
+    name : String,
+    columns : IndexedSeq[ Column ],
+    rows : IndexedSeq[ Row ] ) {
 
   def updateCell( colIdx : Int, rowIdx : Int, cell : Cell ) : Sheet = {
     val _columns : IndexedSeq[ Column ] =

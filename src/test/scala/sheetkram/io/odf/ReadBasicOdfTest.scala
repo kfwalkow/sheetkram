@@ -9,21 +9,36 @@ class ReadBasicOdfTest extends FunSuite {
   private def workbook : Workbook = ReadOdf.fromFile( new File( "src/test/resources/sheetkram-test-1.ods" ) )
 
   test( "Read file and check existence of value" ) {
-    assert( workbook.sheet( 0 ).exists { _.cell( 1, 6 ).exists { _.valueAsText === "It's" } } )
+    assert( workbook.access.sheetByIndex( 0 ).cellAt( 1, 6 ).exists { _.valueAsText === "It's" } )
   }
 
-  test( "Read file and extract value" ) {
+  test( "Read file and extract single value" ) {
     assertResult( "just" ) {
-      workbook.sheet( 0 ).flatMap { _.cell( 2, 6 ) }.map { _.valueAsText }.getOrElse( "" )
+      workbook.access.sheetByIndex( 0 ).cellAt( 2, 6 ).map { _.valueAsText }.getOrElse( "" )
     }
   }
 
-  test( "Read file, check existence of cell and iterate to the value" ) {
-    workbook.sheet( 0 ).exists { s => s.columns.size > 3 && s.rows.size > 6 }
-    workbook.sheet( 0 ).foreach { s =>
-      s.cell( 3, 6 ).foreach { c =>
-        assertResult( "a test!" ) { c.valueAsText }
-      }
+  test( "Read file, access sheet by name and extract single value" ) {
+    assertResult( "just" ) {
+      workbook.access.sheetByName( "Tab1" ).cellAt( 2, 6 ).map { _.valueAsText }.getOrElse( "" )
+    }
+  }
+
+  test( "Read file and extract range of values I" ) {
+    assertResult( Seq( "42", "56", "17", "23", "32", "1234" ).mkString ) {
+      workbook.access.sheetByIndex( 0 ).cellsFrom( 5, 3 ).to( 7, 4 ).map { _.valueAsText }.mkString
+    }
+  }
+
+  test( "Read file and extract range of values II" ) {
+    assertResult( Seq( "A1", "It's", "just", "a test!" ).mkString ) {
+      workbook.access.sheetByIndex( 0 ).cellsFrom( -5, -5 ).to( 3, 10000 ).map { _.valueAsText }.mkString
+    }
+  }
+
+  test( "Read file and extract range of values III" ) {
+    assertResult( Seq( "42", "56", "17", "23", "32", "1234", "M7", "a test!" ).mkString ) {
+      workbook.access.sheetByIndex( 0 ).cellsFrom( 3, 3 ).to( 12, 6 ).map { _.valueAsText }.mkString
     }
   }
 

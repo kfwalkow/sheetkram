@@ -12,7 +12,7 @@ class ReadBiggerXlsxTest extends FunSuite {
 
   test( "Read file and check evalues of column A" ) {
     var i : Int = 0
-    workbook.sheet( 0 ).foreach {
+    workbook.access.sheetByIndex( 0 ).sheet.foreach {
       _.columns( 0 ).cells.foreach { c =>
         c.valueAsText === "A" + i
         i = i + 1
