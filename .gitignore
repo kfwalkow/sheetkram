@@ -3,5 +3,7 @@ dist/
 project/
 target/
 .cache
+.cache-main
+.cache-tests
 .project
 .classpath
