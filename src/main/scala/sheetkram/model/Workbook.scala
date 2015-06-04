@@ -17,7 +17,7 @@ case class Workbook private (
     copy( sheets = ensuredSheets.updated( idx, ensuredSheets( idx ).updateCell( colIdx, rowIdx, cell ) ) )
   }
 
-  def access : WorkbookAccessor = new WorkbookAccessor( this )
+  def get : WorkbookAccessor = new WorkbookAccessor( this )
 
 }
 
