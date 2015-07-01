@@ -10,6 +10,11 @@ class SheetAccessor( _sheet : Option[ Sheet ] ) {
       case None      => None
     }
 
+  def cellAt( cellAddress : String ) : Option[ Cell ] = {
+    val addr = CellAddress( cellAddress )
+    cellAt( addr.colIdx, addr.rowIdx )
+  }
+
   def cellsFrom( colIdx : Int, rowIdx : Int ) : CellRangeAccessor = new CellRangeAccessor( sheet, colIdx, rowIdx )
 
   def columnAt( colIdx : Int ) : Option[ Column ] =
@@ -23,4 +28,5 @@ class SheetAccessor( _sheet : Option[ Sheet ] ) {
       case Some( s ) => if ( rowIdx >= s.rows.size ) None else Some( s.rows( rowIdx ) )
       case None      => None
     }
+
 }

@@ -52,4 +52,28 @@ class WorkbookTest extends FunSuite {
     assert( workbook.get.sheetByIndex( 0 ).cellAt( 3, 5 ).exists { _.valueAsText === cellValueE } )
   }
 
+  test( "Create Workbook, set a few text values and acces them by cell address" ) {
+    val cellValueA = "something"
+    val cellValueB = "klonk"
+    val cellValueC = "kaboom"
+
+    val workbook : Workbook = Workbook()
+      .updateCell( 0, 0, 0, TextCell( cellValueA ) )
+      .updateCell( 0, 560, 23, TextCell( cellValueB ) )
+      .updateCell( 0, 776, 10, TextCell( cellValueC ) )
+
+    assertResult( cellValueA ) {
+      workbook.get.sheetByIndex( 0 ).cellAt( "A1" ).map { _.valueAsText }.mkString
+    }
+
+    assertResult( cellValueB ) {
+      workbook.get.sheetByIndex( 0 ).cellAt( "UO24" ).map { _.valueAsText }.mkString
+    }
+
+    assertResult( cellValueC ) {
+      workbook.get.sheetByIndex( 0 ).cellAt( "ACW11" ).map { _.valueAsText }.mkString
+    }
+
+  }
+
 }
